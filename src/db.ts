@@ -57,6 +57,32 @@ interface ITableKeyColumnUsage {
 
 export type TTableRelations = Dictionary<Dictionary<Dictionary<Dictionary<true>>>>;
 
+export const showTableUsage = (db: knex) => {
+  const dbName = db.client.connectionSettings.database;
+
+  logger.warning(`TableUsage of \`${dbName}\` ...`);
+
+  return select(db)(
+    "INFORMATION_SCHEMA.TABLES",
+    ["TABLE_NAME", "DATA_LENGTH", "INDEX_LENGTH"],
+    "TABLE_SCHEMA",
+    dbName,
+  )
+    .then((rows) => {
+      const results = l.map(rows, (row: any) => ({
+        table: row.TABLE_NAME,
+        usage_as_mib: (row.DATA_LENGTH + row.INDEX_LENGTH) / 1024 / 1024,
+      }));
+      return l.sortBy(results, (a, b) => a.usage_as_mib).reverse();
+    })
+    .then((results) => {
+      l.forEach(results, (row: any) => {
+        logger.info(`${row.table}: \`${row.usage_as_mib} Mib\``, 2)
+      });
+    })
+};
+
+
 export const getTableRelations = (db: knex): Promise<TTableRelations> => {
   const dbName = db.client.connectionSettings.database;
 

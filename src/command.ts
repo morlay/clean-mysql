@@ -18,6 +18,10 @@ const argv: IConfig = yargs(process.argv.slice(2))
       type: "boolean",
       description: "create clean-mysql.config.json",
     },
+    usage: {
+      type: "usage",
+      description: "should db usage",
+    },
     dryRun: {
       type: "boolean",
       description: "only print sqls",

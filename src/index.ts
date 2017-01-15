@@ -8,6 +8,7 @@ import * as path from "path";
 
 import {
   connect,
+  showTableUsage,
   selectWithRelations,
   getTableRelations,
   deleteQueryResults,
@@ -28,6 +29,7 @@ export interface IConfigFile {
 export interface IConfig {
   configFile?: string;
   init?: boolean;
+  usage?: boolean;
   dryRun?: boolean;
 }
 
@@ -55,9 +57,19 @@ export const start = (config: IConfig) => {
     return;
   }
 
+
   const conf = fse.readJSONSync(configFile) as IConfigFile;
 
   const db = connect(conf.db);
+
+  if (config.usage) {
+    return showTableUsage(db)
+      .then(() => {
+        db.destroy()
+      })
+      .catch(console.log);
+  }
+
 
   return getTableRelations(db)
     .then((relations) => {
